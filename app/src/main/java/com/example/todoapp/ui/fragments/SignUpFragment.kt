@@ -1,6 +1,9 @@
 package com.example.todoapp.ui.fragments
 
+import android.content.res.ColorStateList
+import android.graphics.Color
 import android.os.Bundle
+import android.util.Log
 import android.util.Patterns
 import android.view.KeyEvent
 import androidx.fragment.app.Fragment
@@ -16,73 +19,171 @@ class SignUpFragment : Fragment(), View.OnClickListener,View.OnFocusChangeListen
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
+        savedInstanceState: Bundle?): View? {
         binding = FragmentSignUpBinding.inflate(inflater, container, false)
         return binding.root
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        binding.fullNameTil.editText?.onFocusChangeListener = this
+        binding.emailTil.editText?.onFocusChangeListener = this
+        binding.passwordTil.editText?.onFocusChangeListener = this
+        binding.cPasswordTil.editText?.onFocusChangeListener = this
+    }
     private fun validateFullName() : Boolean{
-        var error :String? = null
-        val value = binding.nameText.text.toString()
+        var errorMessage :String? = null
+        val value = binding.fullNameEt.text.toString()
         if(value.isEmpty()){
-            error = "Full Name is required"
+            errorMessage = "Full Name is required"
         }
-        return error == null
+
+        if(errorMessage != null){
+            binding.fullNameTil.apply {
+                isErrorEnabled = true
+                error = errorMessage
+            }
+        }
+        Log.e("myTag","isl-emir10")
+        return errorMessage == null
     }
 
     private fun validateEmail(): Boolean{
-        var error : String? = null
-        val value = binding.emailText.text.toString()
+        var errorMessage : String? = null
+        val value = binding.emailEt.text.toString()
         if (value.isEmpty()){
-            error = "Email is required"
+            errorMessage = "Email is required"
         }else if (!Patterns.EMAIL_ADDRESS.matcher(value).matches()){
-            error = "Email address is invalid"
+            errorMessage = "Email address is invalid"
         }
-        return error == null
+
+        if(errorMessage != null){
+            binding.emailTil.apply {
+                isErrorEnabled = true
+                error = errorMessage
+            }
+        }
+        return errorMessage == null
     }
 
     private fun validatePassword(): Boolean{
-        var error : String? = null
-        val value = binding.passwordtext.text.toString()
+        var errorMessage : String? = null
+        val value = binding.passwordEt.text.toString()
         if (value.isEmpty()){
-            error = "Password is required"
+            errorMessage = "Password is required"
         }else if (value.length < 6){
-            error = "Password must be 6 characters long"
+            errorMessage = "Password must be 6 characters long"
         }
-        return error == null
+        if(errorMessage != null){
+            binding.passwordTil.apply {
+                isErrorEnabled = true
+                error = errorMessage
+            }
+        }
+        return errorMessage == null
     }
 
     private fun validateConfirmPassword():Boolean{
-        var error : String? = null
-        val value = binding.confirmpasswordtext.text.toString()
+        var errorMessage : String? = null
+        val value = binding.cPasswordEt.text.toString()
         if (value.isEmpty()){
-            error = "Confirm Password is required"
+            errorMessage = "Confirm Password is required"
         }else if (value.length < 6){
-            error = "Confirm Password must be 6 characters long"
+            errorMessage = "Confirm Password must be 6 characters long"
         }
-        return error == null
+        if(errorMessage != null) {
+            binding.cPasswordTil.apply {
+                isErrorEnabled = true
+                error = errorMessage
+            }
+        }
+        return errorMessage == null
     }
 
     private fun validatePasswordAndConfirmPassword():Boolean{
-        var error : String? = null
-        val password = binding.passwordtext.text.toString()
-        val confirmPassword = binding.confirmpasswordtext.text.toString()
+        var errorMessage : String? = null
+        val password = binding.passwordEt.text.toString()
+        val confirmPassword = binding.cPasswordEt.text.toString()
         if (password != confirmPassword){
-            error = "Confirm Password doesn't match with password"
+            errorMessage = "Confirm Password doesn't match with password"
         }
-        return error == null
+        if(errorMessage != null) {
+            binding.cPasswordTil.apply {
+                isErrorEnabled = true
+                error = errorMessage
+            }
+        }
+        return errorMessage == null
     }
 
-    override fun onClick(p0: View?) {
-        TODO("Not yet implemented")
+    override fun onClick(view: View?) {
+
     }
 
-    override fun onFocusChange(p0: View?, p1: Boolean) {
-        TODO("Not yet implemented")
+    override fun onFocusChange(view: View?, hasFocus: Boolean) {
+        if (view != null ){
+            when(view.id){
+                R.id.fullNameEt -> {
+                    if (hasFocus){
+                        if (binding.fullNameTil.isErrorEnabled){
+                            binding.fullNameTil.isErrorEnabled = false
+                        }
+                    }else{
+                        validateFullName()
+                    }
+                }
+                R.id.emailText -> {
+                    if (hasFocus){
+                        if (binding.emailTil.isErrorEnabled){
+                            binding.emailTil.isErrorEnabled = false
+                        }
+                    }else{
+                        if (validateEmail()){
+                            //do validation for its uniqueness
+                        }
+                    }
+                }
+                R.id.passwordtext -> {
+                    if (hasFocus){
+                        if (binding.passwordTil.isErrorEnabled){
+                            binding.passwordTil.isErrorEnabled = false
+                        }
+                    }else{
+                        if (validatePassword() && binding.passwordEt.text!!.isNotEmpty() && validateConfirmPassword()
+                            &&validatePasswordAndConfirmPassword()){
+                            if (binding.cPasswordTil.isErrorEnabled){
+                                binding.cPasswordTil.isErrorEnabled =false
+                            }
+                            binding.cPasswordTil.apply {
+                                setStartIconDrawable(R.drawable.ic_baseline_check_circle_24)
+                                setStartIconTintList(ColorStateList.valueOf(Color.GREEN))
+                            }
+                        }
+                    }
+                }
+                R.id.cPasswordEt -> {
+                    if (hasFocus){
+                        if (binding.cPasswordTil.isErrorEnabled){
+                            binding.cPasswordTil.isErrorEnabled = false
+                        }
+                    }else{
+                        if (validateConfirmPassword() && validatePassword() && validatePasswordAndConfirmPassword()){
+                            if (binding.passwordTil.isErrorEnabled){
+                                binding.passwordTil.isErrorEnabled =false
+                            }
+                            binding.cPasswordTil.apply {
+                                setStartIconDrawable(R.drawable.ic_baseline_check_circle_24)
+                                setStartIconTintList(ColorStateList.valueOf(Color.GREEN))
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
-    override fun onKey(p0: View?, p1: Int, p2: KeyEvent?): Boolean {
-        TODO("Not yet implemented")
+
+    override fun onKey(view: View?, event: Int, keyEvent: KeyEvent?): Boolean {
+        return false
     }
 }
